@@ -22,69 +22,33 @@ end
 
 
 def apply_coupons(cart, coupons)
+
+additionToCart = {}
+
+  coupons.each do |coupon|
+    puts coupon
+    cart.each do |item|
+    
+    itemName = item[0]
+    if item[0] == coupon[:item] && item[1][:count] >= coupon[:num]
+      if additionToCart["#{itemName} W/COUPON"]
+        puts "this happened for the increment"
+        additionToCart["#{itemName} W/COUPON"][:count] += coupon[:num]
+      else
+        additionToCart["#{itemName} W/COUPON"] = {:price=>coupon[:cost]/coupon[:num],:clearance=>cart[itemName][:clearance],:count=>coupon[:num]}
+      end
+      cart[itemName][:count] -= coupon[:num]
+    end
+  end
+end
   
-#if no coupons return cart
-if coupons == []
-  return cart
-end
-
-#### Consolidate Coupons ###
-newArr = []
-
-coupons.each do |ele|
-  if newArr.include?(ele)
-    
-    newArr[newArr.find_index(ele)][:num] = newArr[newArr.find_index(ele)][:num] + ele[:num]
-    
-    
-    newArr[newArr.find_index(ele)][:cost] = newArr[newArr.find_index(ele)][:cost] + ele[:cost]
-  else
-    newArr.push(ele)
-  end
-end
-
-coupons = newArr
-
-#######
+    additionToCart.each do |k, v|
+      cart[k] = v
+    end
 
 
-i = 0;
-
-
-while i < coupons.count
-  #find discounted item
-  discounted_item = cart.select {|ele| ele == coupons[i][:item]}.to_h
-
-  #if no discounted items return cart
-  if discounted_item == {}
-    return cart
-  end
-
-
-  #if num from coupons is less than count than apply coupons
-  if  coupons[i][:num] <= discounted_item[coupons[i][:item]][:count]
-    #begin creating new item
-    new_item_key = "#{discounted_item.keys[0]} W/COUPON"
-    new_item_values = discounted_item.values[0]
-
-    #add a new k,v pair to cart
-    new_name_copy = discounted_item.keys[0].to_s
-    new_name_copy = "#{new_name_copy} W/COUPON"
-
-    #create the new hash with its values...
-    cart[new_name_copy] = {}
-    cart[new_name_copy][:price] = coupons[i][:cost] / coupons[i][:num]
-    cart[new_name_copy][:clearance] = discounted_item[coupons[i][:item]][:clearance]
-    cart[new_name_copy][:count] = coupons[i][:num]
-
-
-    #minus from the original AVOCADO
-    cart[coupons[i][:item]][:count] = cart[coupons[i][:item]][:count] - coupons[i][:num]
-  end
-i += 1
-end
-
-cart
+  # puts cart
+  cart
 end
 
 
@@ -111,11 +75,12 @@ def apply_clearance(cart)
   new_hash_test
 end
 
+
 def checkout(cart = {}, coupons = [])
  hold = consolidate_cart(cart)
  hold = apply_coupons(hold,coupons)
  hold = apply_clearance(hold)
- puts hold
+#  puts hold
  sum = 0
   hold.each do |k, v|
     price = v[:price] * v[:count]
@@ -125,8 +90,9 @@ def checkout(cart = {}, coupons = [])
   if sum > 100
     sum = sum - (sum * 0.10)
   end
+  # puts "total cart:"
+  # puts sum
   sum
 end
-
 
 
